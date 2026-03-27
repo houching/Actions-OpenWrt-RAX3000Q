@@ -58,6 +58,19 @@ if uci get dhcp.lan >/dev/null 2>&1; then
   uci del dhcp.lan.dhcpv6
 fi
 
+# Custom Switch / VLAN Configuration
+# Using indices instead of anonymous IDs (cfgXXXX) for build portability.
+uci set network.@switch_vlan[0].ports='6 2 4 5 1'
+uci set network.@switch_vlan[0].vid='1'
+uci set network.@switch_vlan[1].ports='3t 1t'
+uci set network.@switch_vlan[1].vid='123'
+
+uci add network switch_vlan
+uci set network.@switch_vlan[-1].device='switch1'
+uci set network.@switch_vlan[-1].vlan='3'
+uci set network.@switch_vlan[-1].ports='3t 1t'
+uci set network.@switch_vlan[-1].vid='234'
+
 uci commit network
 uci commit wireless
 uci commit system

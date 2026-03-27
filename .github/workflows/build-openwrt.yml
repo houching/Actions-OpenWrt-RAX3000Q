@@ -54,6 +54,15 @@ jobs:
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
 
+    - name: Maximize build space
+      uses: easimon/maximize-build-space@master
+      with:
+        root-reserve-mb: 512
+        swap-size-mb: 1024
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-haskell: 'true'
+
     - name: Clone source code
       working-directory: /workdir
       run: |
@@ -107,7 +116,7 @@ jobs:
     - name: Fix some download failed first
       run: |
         cd openwrt
-        mkdir dl
+        mkdir -p dl
         wget "https://www.dropbox.com/scl/fi/9ts30p2csnlb9imaf8k68/backports-20210222-5.4-qsdk-11.5.0.5.tar.xz?rlkey=sntbyfjgg86gu2uoocgb9ggp1&st=7w81hl56&dl=1" -O dl/backports-20210222-5.4-qsdk-11.5.0.5.tar.xz
         wget "https://www.dropbox.com/scl/fi/gu7ge6jmefn72ttuop1zs/linux-5.4-qsdk-11.5.0.5.tar.xz?rlkey=tdpq0ye35x290frbh7i8uqrm8&st=jjvegqrr&dl=1" -O dl/linux-5.4-qsdk-11.5.0.5.tar.xz
 
@@ -139,7 +148,7 @@ jobs:
 
     - name: Organize files
       id: organize
-      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      if: env.UPLOAD_FIRMWARE == 'true'
       run: |
         cd openwrt/bin/targets/*/*
         rm -rf packages
