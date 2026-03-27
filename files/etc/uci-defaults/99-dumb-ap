@@ -11,8 +11,13 @@ done
 # Bridge Setup: Add WAN port into LAN bridge
 # On RAX3000Q, eth0 is typically WAN, while eth1 is LAN ports.
 # We convert LAN to DHCP client and add eth0 to its interface list.
+uci del network.br-lan.ports
+uci add_list network.br-lan.ports='eth0'
+uci add_list network.br-lan.ports='eth1'
+uci set network.br-lan.stp='1'
+uci set network.br-lan.ipv6='0'
+
 uci set network.lan.proto='dhcp'
-uci set network.lan.ifname='eth0 eth1'
 uci delete network.lan.ipaddr
 uci delete network.lan.netmask
 uci del network.lan.ip6assign
@@ -30,6 +35,8 @@ uci show wireless | grep "=wifi-iface" | cut -d'.' -f2 | cut -d'=' -f1 | while r
   uci set wireless."$section".ieee80211r='1'
   uci set wireless."$section".mobility_domain='123f'
   uci set wireless."$section".ft_psk_generate_local='1'
+  uci set wireless."$section".ft_over_ds='0'
+  uci set wireless."$section".reassociation_deadline='2000'
 done
 
 # Enable all radios
@@ -39,7 +46,7 @@ done
 
 # System/Hostname & Timezone (Cambodia)
 uci set system.@system[0].hostname='XX.3000QY.ap'
-uci set system.@system[0].zonename='Asia/Phnom_Penh'
+uci set system.@system[0].zonename='Asia/Phnom Penh'
 uci set system.@system[0].timezone='<+07>-7'
 
 # Clean up DHCP/IPv6 RA services on LAN
