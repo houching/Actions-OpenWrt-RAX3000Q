@@ -11,11 +11,12 @@ done
 # Bridge Setup: Add WAN port into LAN bridge
 # On RAX3000Q, eth0 is typically WAN, while eth1 is LAN ports.
 # We convert LAN to DHCP client and add eth0 to its interface list.
-uci del network.br-lan.ports
-uci add_list network.br-lan.ports='eth0'
-uci add_list network.br-lan.ports='eth1'
-uci set network.br-lan.stp='1'
-uci set network.br-lan.ipv6='0'
+BRLANSEC=$(uci show network | grep "\.name='br-lan'" | cut -d'.' -f2)
+uci del network.${BRLANSEC}.ports
+uci add_list network.${BRLANSEC}.ports='eth0'
+uci add_list network.${BRLANSEC}.ports='eth1'
+uci set network.${BRLANSEC}.stp='1'
+uci set network.${BRLANSEC}.ipv6='0'
 
 uci set network.lan.proto='dhcp'
 uci delete network.lan.ipaddr
