@@ -1,0 +1,45 @@
+
+config usteer 'global'
+	option network 'lan'
+	option syslog '1'
+	option local_mode '0'
+	option ipv6 '0'
+	option debug_level '1'
+
+	# Roaming
+	option roam_scan_snr '-75'
+	option roam_scan_tries '3'
+	option roam_scan_interval '10000'
+	option roam_trigger_snr '-80'
+	option roam_trigger_interval '60000'
+	option roam_kick_delay '10000'
+
+	# Connection quality gate
+	option min_connect_snr '-85'
+	option min_snr '-85'
+	option min_snr_kick_delay '8000'
+
+	# Signal diff to prefer better AP
+	option signal_diff_threshold '10'
+
+	# Band steering (push 2.4 clients → 5GHz)
+	option band_steering_interval '120000'
+	option band_steering_min_snr '-65'
+	option band_steering_threshold '5'
+
+	# Load balancing between APs
+	option load_balancing_threshold '5'
+
+	# Neighbor/peer timing
+	option remote_update_interval '1000'
+	option remote_node_timeout '10'
+
+	# Link quality measurement
+	option link_measurement_interval '30000'
+
+	# Allow assoc rejection for steering
+	option assoc_steering '1'
+
+	# Logging
+	list event_log_types 'signal_kick'
+	list event_log_types 'assoc_req_deny'

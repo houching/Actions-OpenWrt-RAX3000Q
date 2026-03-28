@@ -1,12 +1,12 @@
 #!/bin/sh
 
 # Stop and disable routing services
-for i in firewall dnsmasq odhcpd; do
-  if [ -x /etc/init.d/"$i" ]; then
-    /etc/init.d/"$i" disable
-    /etc/init.d/"$i" stop
-  fi
-done
+# for i in firewall dnsmasq odhcpd; do
+#   if [ -x /etc/init.d/"$i" ]; then
+#     /etc/init.d/"$i" disable
+#     /etc/init.d/"$i" stop
+#   fi
+# done
 
 # Bridge Setup: Add WAN port into LAN bridge
 # On RAX3000Q, eth0 is typically WAN, while eth1 is LAN ports.
@@ -60,6 +60,7 @@ fi
 
 # Custom Switch / VLAN Configuration
 # Using indices instead of anonymous IDs (cfgXXXX) for build portability.
+# Create Bridge in Interface select the taged vlan of eth0
 uci set network.@switch_vlan[0].ports='6 2 4 5 1'
 uci set network.@switch_vlan[0].vid='1'
 uci set network.@switch_vlan[1].ports='3t 1t'
@@ -76,8 +77,14 @@ uci commit wireless
 uci commit system
 uci commit dhcp
 
+# Install custom packages from the local directory
+if [ -d "/root/packages" ]; then
+  opkg install /root/packages/*.ipk
+  rm -rf /root/packages
+fi
+
 # Deactivate firewall config file
-[ -f /etc/config/firewall ] && mv /etc/config/firewall /etc/config/firewall.unused
+# [ -f /etc/config/firewall ] && mv /etc/config/firewall /etc/config/firewall.unused
 
 exit 0
 
