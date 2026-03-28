@@ -11,7 +11,6 @@
 name: Build OpenWrt
 
 on:
-  repository_dispatch:
   workflow_dispatch:
     inputs:
       ssh:
@@ -43,9 +42,6 @@ on:
         description: '802.11r FT Mobility Domain (Default: 123f)'
         required: false
         default: '123f'
-  schedule:
-    - cron: 0 8 * * 2
-
 env:
   REPO_URL: https://github.com/kkstone/immortalwrt-ipq50xx
   REPO_BRANCH: openwrt-21.02
