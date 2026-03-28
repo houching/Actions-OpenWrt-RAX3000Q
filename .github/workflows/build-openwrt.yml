@@ -19,6 +19,30 @@ on:
         required: false
         default: 'false'
         type: boolean
+      vlan_id_1:
+        description: 'Management VLAN ID (Fallback: 123)'
+        required: false
+        default: '123'
+      vlan_id_2:
+        description: 'IoT/Guest VLAN ID (Fallback: 234)'
+        required: false
+        default: '234'
+      ap_hostname:
+        description: 'AP Hostname (Default: XX.3000QY.ap)'
+        required: false
+        default: 'XX.3000QY.ap'
+      wifi_ssid:
+        description: 'Wi-Fi SSID (Default: XX)'
+        required: false
+        default: 'XX'
+      wifi_key:
+        description: 'Wi-Fi Key (Default: 12345678)'
+        required: false
+        default: '12345678'
+      wifi_mobility_domain:
+        description: '802.11r FT Mobility Domain (Default: 123f)'
+        required: false
+        default: '123f'
   schedule:
     - cron: 0 8 * * 2
 
@@ -33,6 +57,12 @@ env:
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TZ: Asia/Phnom_Penh
+  VLAN_ID_1: ${{ github.event.inputs.vlan_id_1 || '123' }}
+  VLAN_ID_2: ${{ github.event.inputs.vlan_id_2 || '234' }}
+  AP_HOSTNAME: ${{ github.event.inputs.ap_hostname || 'XX.3000QY.ap' }}
+  WIFI_SSID: ${{ github.event.inputs.wifi_ssid || 'XX' }}
+  WIFI_KEY: ${{ github.event.inputs.wifi_key || '12345678' }}
+  WIFI_FT_DOMAIN: ${{ github.event.inputs.wifi_mobility_domain || '123f' }}
 
 jobs:
   build:
@@ -112,6 +142,13 @@ jobs:
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
+        # Inject configuration from GitHub environment keys
+        sed -i "s/VLAN1_ID=\"123\"/VLAN1_ID=\"$VLAN_ID_1\"/g" openwrt/files/etc/uci-defaults/99-dumb-ap
+        sed -i "s/VLAN2_ID=\"234\"/VLAN2_ID=\"$VLAN_ID_2\"/g" openwrt/files/etc/uci-defaults/99-dumb-ap
+        sed -i "s/AP_HOSTNAME=\"XX.3000QY.ap\"/AP_HOSTNAME=\"$AP_HOSTNAME\"/g" openwrt/files/etc/uci-defaults/99-dumb-ap
+        sed -i "s/WIFI_SSID=\"XX\"/WIFI_SSID=\"$WIFI_SSID\"/g" openwrt/files/etc/uci-defaults/99-dumb-ap
+        sed -i "s/WIFI_KEY=\"12345678\"/WIFI_KEY=\"$WIFI_KEY\"/g" openwrt/files/etc/uci-defaults/99-dumb-ap
+        sed -i "s/FT_DOMAIN=\"123f\"/FT_DOMAIN=\"$WIFI_FT_DOMAIN\"/g" openwrt/files/etc/uci-defaults/99-dumb-ap
         [ -e packages ] && mkdir -p openwrt/files/root/packages && cp -r packages/* openwrt/files/root/packages/
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH

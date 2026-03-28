@@ -8,6 +8,16 @@
 #   fi
 # done
 
+# Wi-Fi & System Identity Variables (replaced by GH Actions)
+AP_HOSTNAME="XX.3000QY.ap"
+WIFI_SSID="XX"
+WIFI_KEY="12345678"
+FT_DOMAIN="123f"
+
+# VLAN IDs with fallbacks (replaced by GH Actions)
+VLAN1_ID="123"
+VLAN2_ID="234"
+
 # Bridge Setup: Add WAN port into LAN bridge
 # On RAX3000Q, eth0 is typically WAN, while eth1 is LAN ports.
 # We convert LAN to DHCP client and add eth0 to its interface list.
@@ -17,6 +27,18 @@ uci add_list network.${BRLANSEC}.ports='eth0'
 uci add_list network.${BRLANSEC}.ports='eth1'
 uci set network.${BRLANSEC}.stp='1'
 uci set network.${BRLANSEC}.ipv6='0'
+
+# Create Guest Bridge for specific VLAN
+uci add network device
+uci set network.@device[-1].type='bridge'
+uci set network.@device[-1].name='br-guest'
+uci add_list network.@device[-1].ports="eth0.$VLAN1_ID"
+uci set network.@device[-1].ipv6='0'
+
+uci set network.GUEST='interface'
+uci set network.GUEST.proto='none'
+uci set network.GUEST.device='br-guest'
+uci set network.GUEST.defaultroute='0'
 
 uci set network.lan.proto='dhcp'
 uci delete network.lan.ipaddr
@@ -28,13 +50,12 @@ uci delete network.wan
 uci delete network.wan6
 
 # Wi-Fi Setup - Enhanced Detection
-# Iterates through all wireless interfaces to apply settings broadly.
 uci show wireless | grep "=wifi-iface" | cut -d'.' -f2 | cut -d'=' -f1 | while read section; do
-  uci set wireless."$section".ssid='XX'
+  uci set wireless."$section".ssid="$WIFI_SSID"
   uci set wireless."$section".encryption='psk2+ccmp'
-  uci set wireless."$section".key='12345678'
+  uci set wireless."$section".key="$WIFI_KEY"
   uci set wireless."$section".ieee80211r='1'
-  uci set wireless."$section".mobility_domain='123f'
+  uci set wireless."$section".mobility_domain="$FT_DOMAIN"
   uci set wireless."$section".ft_psk_generate_local='1'
   uci set wireless."$section".ft_over_ds='0'
   uci set wireless."$section".reassociation_deadline='2000'
@@ -46,7 +67,7 @@ uci show wireless | grep "=wifi-device" | cut -d'.' -f2 | cut -d'=' -f1 | while 
 done
 
 # System/Hostname & Timezone (Cambodia)
-uci set system.@system[0].hostname='XX.3000QY.ap'
+uci set system.@system[0].hostname="$AP_HOSTNAME"
 uci set system.@system[0].zonename='Asia/Phnom Penh'
 uci set system.@system[0].timezone='<+07>-7'
 
@@ -60,17 +81,18 @@ fi
 
 # Custom Switch / VLAN Configuration
 # Using indices instead of anonymous IDs (cfgXXXX) for build portability.
+
 # Create Bridge in Interface select the taged vlan of eth0
 uci set network.@switch_vlan[0].ports='6 2 4 5 1'
 uci set network.@switch_vlan[0].vid='1'
-uci set network.@switch_vlan[1].ports='3t 1t'
-uci set network.@switch_vlan[1].vid='123'
+uci set network.@switch_vlan[1].ports='3t 2t 4t 5t 1t'
+uci set network.@switch_vlan[1].vid="$VLAN1_ID"
 
 uci add network switch_vlan
 uci set network.@switch_vlan[-1].device='switch1'
 uci set network.@switch_vlan[-1].vlan='3'
-uci set network.@switch_vlan[-1].ports='3t 1t'
-uci set network.@switch_vlan[-1].vid='234'
+uci set network.@switch_vlan[-1].ports='3t 2t 4t 5t 1t'
+uci set network.@switch_vlan[-1].vid="$VLAN2_ID"
 
 uci commit network
 uci commit wireless
